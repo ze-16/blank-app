@@ -6,7 +6,7 @@ import pandas as pd
 
 try:
     Data = pd.read_excel(
-        r"C:\Users\zecqt\OneDrive\Desktop\DS project lifecycle\esttrafficforallmotorv1803 (1).xls",
+        r"C:/workspaces/blank-app/esttrafficforallmotorv1803 (1).xls",
         sheet_name=13,
         header=4
     )
@@ -32,32 +32,9 @@ Data['2009'] = Data['2009'].fillna(Data['2009'].mean())
 
 Data = Data.dropna()
 
-tab1,tab2,tab3 = st.tabs(["Per year","All time","Histogram"])
+tab1,tab2,tab3 = st.tabs(["All time","Per year","Histogram"])
 
 with tab1:
-
-
-    year_selected = st.selectbox("Select Year", year_cols)
-
-
-    st.title(f"Boxplot for Year {year_selected}")
-
-    fig, ax = plt.subplots(figsize=(14, 6))
-
-    Data_box_selected = Data[[year_selected]]  
-
-    ax.boxplot(Data_box_selected.values, patch_artist=True)
-
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Frequency')
-    ax.set_title(f'Distribution of Frequencies for Year {year_selected} (All Local Authorities)')
-    ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-    st.pyplot(fig)
-
-
-
-with tab2:
 
 
     st.title("Boxplot for All Years Combined")
@@ -79,6 +56,30 @@ with tab2:
 
     st.title("Full Dataset Display")
     st.dataframe(Data)
+
+
+
+
+with tab2:
+    year_selected = st.selectbox("Select Year", year_cols)
+
+
+    st.title(f"Boxplot for Year {year_selected}")
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+
+    Data_box_selected = Data[[year_selected]]  
+
+    ax.boxplot(Data_box_selected.values, patch_artist=True)
+
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Frequency')
+    ax.set_title(f'Distribution of Frequencies for Year {year_selected} (All Local Authorities)')
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+    st.pyplot(fig)
+
+
 
 
 
