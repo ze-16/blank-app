@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from geopandas.tools import geocode
 from geopy.geocoders import Nominatim
+import pydeck as pdk
 
 uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False)
 
@@ -95,34 +96,74 @@ if uploaded_file is not None:
             plt.xticks(rotation=45)
             st.pyplot(fig)
 
-        c_point_list = []
+        #c_point_list = []
+
+        if not Data['Local Authority'].str.contains('United Kingdom').any():
+            Data['Local Authority'] = Data['Local Authority'] + ", United Kingdom"
+        #Without this code, geopandas starts searching all over the world map
+        #Therefore sometimes it accidentally plot uk locations elsewhere e.g in the USA
         
         for i, row in Data.iterrows():
-            c_point = geocode(row['Local Authority'])
+            c_point = geocode(row['Local Authority'] 
+                              )
 
             if not c_point.empty:
                 lt = c_point.geometry.y.values[0]
                 ln = c_point.geometry.x.values[0]
-                c_point_list.append(
-                    {
-                        'Local Authority': row['Local Authority'],
-                        'latitude': lt,
-                        'longitude': ln
-                    }
-                )
+
+
+                Data.at[i,'latitude'] = lt
+                Data.at[i,'longitude'] = ln 
             else:
-                c_point_list.append(
-                    {
-                        'Local Authority': row['Local Authority'],
-                        'Latitude': None,
-                        'Longitude': None
-                    }
-                )
+                Data.at[i,'latitude'] = np.nan
+                Data.at[i,'longitude'] = np.nan
+
         
 
         with tab4:
             st.header("Plot of points on map representing traffic flows")
-            st.map(c_point_list,zoom=1)
+
+            Data['average_traffic'] = Data[year_cols].mean(axis=1)
+            #Using the average traffic flow instead of the previously implemented per year traffic flow
+            #Due to the fact that every time a new year was selected in selectbox, streamlit had to do the whole calculation again
+            #Therefore to avoid performance issues, I decided to use an average instead
+
+            traffic_min = Data['average_traffic'].min()
+            traffic_max = Data['average_traffic'].max()
+
+            def get_color(value):
+
+                norm_value = (value - traffic_min) / (traffic_max - traffic_min)
+
+                red = int(norm_value * 255)
+                green = int((1 - norm_value) * 255)
+                return [red, green, 0]
+
+
+            Data['color'] = Data['average_traffic'].apply(get_color)
+
+            lyr = pdk.Layer(
+                "ScatterplotLayer",
+                data=Data,
+                get_position = '[longitude, latitude]',
+                get_color='color',
+                get_radius=600,
+                pickable=True,
+                auto_highlight=True,
+
+            )
+
+            vstate = pdk.ViewState(
+                latitude=Data['latitude'].mean(),
+                longitude=Data['longitude'].mean(),
+                zoom=5,
+                pitch=0,
+
+
+            )
+
+            r = pdk.Deck(layers=[lyr], initial_view_state=vstate,tooltip={"text": "{Local Authority}\nTraffic: {average_traffic}"})
+            st.pydeck_chart(r)
         
    
 
