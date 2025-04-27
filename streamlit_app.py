@@ -2,6 +2,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from geopandas.tools import geocode
+from geopy.geocoders import Nominatim
 
 uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False)
 
@@ -24,7 +26,7 @@ if uploaded_file is not None:
 
         Data = Data.dropna()
 
-        tab1,tab2,tab3 = st.tabs(["All time","Per year","Histogram"])
+        tab1,tab2,tab3,tab4 = st.tabs(["All time","Per year","Histogram","Geoplot"])
 
         with tab1:
 
@@ -93,12 +95,44 @@ if uploaded_file is not None:
             plt.xticks(rotation=45)
             st.pyplot(fig)
 
+        c_point_list = []
+        
+        for i, row in Data.iterrows():
+            c_point = geocode(row['Local Authority'])
+
+            if not c_point.empty:
+                lt = c_point.geometry.y.values[0]
+                ln = c_point.geometry.x.values[0]
+                c_point_list.append(
+                    {
+                        'Local Authority': row['Local Authority'],
+                        'latitude': lt,
+                        'longitude': ln
+                    }
+                )
+            else:
+                c_point_list.append(
+                    {
+                        'Local Authority': row['Local Authority'],
+                        'Latitude': None,
+                        'Longitude': None
+                    }
+                )
+        
+
+        with tab4:
+            st.header("Plot of points on map representing traffic flows")
+            st.map(c_point_list,zoom=1)
+        
+   
+
+
 
 
     except Exception as e:
         st.error(f"An error occurred: {e}")    
 else:
-    st.info("File not uploaded")
+    st.info("File not uploaded, upload file for analysis!")
 
 
 
