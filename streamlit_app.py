@@ -104,7 +104,8 @@ if uploaded_file is not None:
         #Therefore sometimes it accidentally plot uk locations elsewhere e.g in the USA
         
         for i, row in Data.iterrows():
-            c_point = geocode(row['Local Authority'],  
+            c_point = geocode(row['Local Authority'],
+                              provider = 'nominatim',  
                               user_agent = 'xyz', 
                               timeout = 10 
                               )
