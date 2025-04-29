@@ -104,7 +104,9 @@ if uploaded_file is not None:
         #Therefore sometimes it accidentally plot uk locations elsewhere e.g in the USA
         
         for i, row in Data.iterrows():
-            c_point = geocode(row['Local Authority'] 
+            c_point = geocode(row['Local Authority'],  
+                              user_agent = 'xyz', 
+                              timeout = 10 
                               )
 
             if not c_point.empty:
@@ -164,6 +166,10 @@ if uploaded_file is not None:
 
             r = pdk.Deck(layers=[lyr], initial_view_state=vstate,tooltip={"text": "{Local Authority}\nTraffic: {average_traffic}"})
             st.pydeck_chart(r)
+            st.write("Points on map are averages of points in the dataset per Local authority across the years.")
+            st.write("This is due to considerations for performance and time saving, " \
+            "as inputing a new year based on choice meant re-running the code and " \
+            "geopandas taking time to find the coordinates again.")
         
    
 
