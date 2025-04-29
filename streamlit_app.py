@@ -105,7 +105,7 @@ if uploaded_file is not None:
         
         for i, row in Data.iterrows():
             c_point = geocode(row['Local Authority'],
-                              provider = 'nominatim',  
+                              #provider = 'nominatim',  
                               user_agent = 'xyz', 
                               timeout = 10 
                               )
