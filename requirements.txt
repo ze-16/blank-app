@@ -6,3 +6,4 @@ geopandas
 geopy
 pydeck
 xlrd
+openpyxl

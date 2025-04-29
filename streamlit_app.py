@@ -96,43 +96,46 @@ if uploaded_file is not None:
             plt.xticks(rotation=45)
             st.pyplot(fig)
 
-        #c_point_list = []
 
-        if not Data['Local Authority'].str.contains('United Kingdom').any():
-            Data['Local Authority'] = Data['Local Authority'] + ", United Kingdom"
-        #Without this code, geopandas starts searching all over the world map
-        #Therefore sometimes it accidentally plot uk locations elsewhere e.g in the USA
+        # if not Data['Local Authority'].str.contains('United Kingdom').any():
+        #     Data['Local Authority'] = Data['Local Authority'] + ", United Kingdom"
+        # #Without this code, geopandas starts searching all over the world map
+        # #Therefore sometimes it accidentally plot uk locations elsewhere e.g in the USA
         
-        for i, row in Data.iterrows():
-            c_point = geocode(row['Local Authority'],
-                              #provider = 'nominatim',  
-                              user_agent = 'xyz', 
-                              timeout = 10 
-                              )
+        # for i, row in Data.iterrows():
+        #     c_point = geocode(row['Local Authority'],
+        #                       #provider = 'nominatim',  
+        #                       user_agent = 'xyz', 
+        #                       timeout = 10 
+        #                       )
 
-            if not c_point.empty:
-                lt = c_point.geometry.y.values[0]
-                ln = c_point.geometry.x.values[0]
+        #     if not c_point.empty:
+        #         lt = c_point.geometry.y.values[0]
+        #         ln = c_point.geometry.x.values[0]
 
 
-                Data.at[i,'latitude'] = lt
-                Data.at[i,'longitude'] = ln 
-            else:
-                Data.at[i,'latitude'] = np.nan
-                Data.at[i,'longitude'] = np.nan
-
+        #         Data.at[i,'latitude'] = lt
+        #         Data.at[i,'longitude'] = ln 
+        #     else:
+        #         Data.at[i,'latitude'] = np.nan
+        #         Data.at[i,'longitude'] = np.nan
         
+
+        # Data.to_excel("pre_geocoded_data.xlsx", index = False)
+
+        url = "https://github.com/ze-16/blank-app/raw/refs/heads/main/pre_geocoded_data.xlsx"
+        Data1 = pd.read_excel(url, engine = 'openpyxl' )
 
         with tab4:
             st.header("Plot of points on map representing traffic flows")
+            ys_map = st.selectbox("Select year", year_cols, key="map_year")
+            trafiic_values = Data1[ys_map]
 
-            Data['average_traffic'] = Data[year_cols].mean(axis=1)
-            #Using the average traffic flow instead of the previously implemented per year traffic flow
-            #Due to the fact that every time a new year was selected in selectbox, streamlit had to do the whole calculation again
-            #Therefore to avoid performance issues, I decided to use an average instead
 
-            traffic_min = Data['average_traffic'].min()
-            traffic_max = Data['average_traffic'].max()
+
+
+            traffic_min = trafiic_values.min()
+            traffic_max = trafiic_values.max()
 
             def get_color(value):
 
@@ -143,11 +146,11 @@ if uploaded_file is not None:
                 return [red, green, 0]
 
 
-            Data['color'] = Data['average_traffic'].apply(get_color)
+            Data1['color'] = Data1[ys_map].apply(get_color)
 
             lyr = pdk.Layer(
                 "ScatterplotLayer",
-                data=Data,
+                data=Data1,
                 get_position = '[longitude, latitude]',
                 get_color='color',
                 get_radius=600,
@@ -157,8 +160,8 @@ if uploaded_file is not None:
             )
 
             vstate = pdk.ViewState(
-                latitude=Data['latitude'].mean(),
-                longitude=Data['longitude'].mean(),
+                latitude=Data1['latitude'].mean(),
+                longitude=Data1['longitude'].mean(),
                 zoom=5,
                 pitch=0,
 
@@ -167,10 +170,7 @@ if uploaded_file is not None:
 
             r = pdk.Deck(layers=[lyr], initial_view_state=vstate,tooltip={"text": "{Local Authority}\nTraffic: {average_traffic}"})
             st.pydeck_chart(r)
-            st.write("Points on map are averages of points in the dataset per Local authority across the years.")
-            st.write("This is due to considerations for performance and time saving, " \
-            "as inputing a new year based on choice meant re-running the code and " \
-            "geopandas taking time to find the coordinates again.")
+
         
    
 
