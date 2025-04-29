@@ -5,3 +5,4 @@ pandas
 geopandas
 geopy
 pydeck
+xlrd
