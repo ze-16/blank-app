@@ -147,6 +147,7 @@ if uploaded_file is not None:
 
 
             Data1['color'] = Data1[ys_map].apply(get_color)
+            Data1['tooltip'] = Data1['Local Authority'] + "\nTraffic: " + Data1[ys_map].astype(str)
 
             lyr = pdk.Layer(
                 "ScatterplotLayer",
@@ -168,7 +169,7 @@ if uploaded_file is not None:
 
             )
 
-            r = pdk.Deck(layers=[lyr], initial_view_state=vstate,tooltip={"text": "{Local Authority}\nTraffic: {average_traffic}"})
+            r = pdk.Deck(layers=[lyr], initial_view_state=vstate,tooltip={"text": "{tooltip}"})
             st.pydeck_chart(r)
 
         
